@@ -107,9 +107,9 @@ app.post("/login", async (request, response) => {
 });
 
 //  reports
-app.get("/reports", authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-  const getReportsQuery = `SELECT category, SUM(amount) AS total FROM transactions WHERE userId =${userId} GROUP BY category;`;
+app.get("/reports/:id", authenticateToken, async (req, res) => {
+  const userId = req.params;
+  const getReportsQuery = `SELECT category, SUM(amount) AS total FROM transactions WHERE user_id =${userId} GROUP BY category;`;
   const reportsArray = await db.all(getReportsQuery);
   response.send(reportsArray);
 });
@@ -117,7 +117,8 @@ app.get("/reports", authenticateToken, async (req, res) => {
 // CRUD Operations for transactions
 app.get("/transactions/:id", authenticateToken, async (req, res) => {
   const { username } = req;
-  const getTransactionsQuery = `SELECT * FROM transactions WHERE username =${username};`;
+  const { userId } = req.params;
+  const getTransactionsQuery = `SELECT * FROM transactions WHERE username =${username} AND user_id=${userId};`;
   const transactionsArray = await db.all(getTransactionsQuery);
   response.send(transactionsArray);
 });
@@ -139,8 +140,8 @@ app.put("/transactions/:id/", authenticateToken, async (request, response) => {
   const updateTransactionQuery = `UPDATE transactions
     SET 
      date='${date}',
-     jersy_number = '${category}',
-     role = ${amount}
+     category = '${category}',
+     amount = ${amount}
     WHERE 
      user_id= ${id};`;
   const dbresponse = await db.run(updateTransactionQuery);
@@ -150,7 +151,7 @@ app.put("/transactions/:id/", authenticateToken, async (request, response) => {
 app.delete("/transactions/:id", authenticateToken, (req, res) => {
   const { username } = req;
   const { id } = req.params;
-  const deleteTransactionQuery = `DELETE FROM transactions WHERE username = '${usename}' AND id = ${id};`;
+  const deleteTransactionQuery = `DELETE FROM transactions WHERE user_id = ${id};`;
 });
 
 module.exports = app;
